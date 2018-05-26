@@ -1,0 +1,199 @@
+﻿# This is a file I received from Blaar on Thingiverse
+# You can find his models here: https://makerware.thingiverse.com/BLaaR/about
+# I'll be using this as a blueprint for the IO of my project
+# I've converted the original tool from Python 2.x to 3.x using an online tool.
+# Below is the converted tool:
+
+
+
+# object part stripper
+# by MrPotatoHead using python 2.6
+
+
+import struct
+import zlib
+import codecs
+from array import array
+import sys
+#saveout = sys.stdout
+#outfile = open('C:/3dsmax7/pdo/output.txt', 'w')
+#sys.stdout = outfile
+
+def pnum():
+    global xout 
+    global yout 
+    global zout 
+    print("")
+    dump = f.read(12)
+    if dump == "": return
+    dump = f.read(4)
+    pval = struct.unpack("<f", dump)
+    x = pval[0]*scale
+    print("x pos =",("%.2f" % x))
+    xout = ("%.6f" % x)
+
+    dump = f.read(12)
+    dump = f.read(4)
+    pval = struct.unpack("<f", dump)
+    y = pval[0]*scale
+    print("Y pos =",("%.2f" % y))
+    yout = ("%.6f" % y)
+
+    dump = f.read(12)
+    dump = f.read(4)
+    pval = struct.unpack("<f", dump)
+    z = pval[0]*scale
+    print("Z pos =",("%.2f" % z))
+    zout = ("%.6f" % z)
+
+    dump = f.read(16)
+
+    return
+
+
+h1= codecs.decode('424d','hex')
+h2=codecs.decode('000000003600000028000000','hex')
+h3=codecs.decode('010018000000000000000000120B0000120B00000000000000000000','hex')
+h4= codecs.decode('0000','hex')
+
+#******* Change the Scale here *********
+scale = 100
+#**************************************
+
+
+#******* change the file name and directory here******
+
+posname = "war_torso"
+directory = "C:/temp/"
+
+#******************************************
+
+inputname = directory+posname+".data{hierarchicalobb}"
+f = open(inputname, "rb")
+
+metafile = directory+posname+"pos.mqo"
+of = open(metafile, 'w')
+
+of.write("Metasequoia Document\n")
+of.write("Format Text Ver 1.0\n")
+of.write(" \n")
+of.write("Scene {\n")
+of.write("pos -30.5374 -301.0406 878.7299\n")
+of.write("lookat 0.0000 0.0000 0.0000\n")
+of.write("head -6.8400\n")
+of.write("pich 0.1908\n")
+of.write("ortho 0\n")
+of.write("zoom2 10.0094\n")
+of.write("amb 0.490 0.490 0.490\n")
+of.write("}\n")
+
+xout = ""
+yout = ""
+zout = ""
+
+
+try:
+    dump = f.read(4)
+    dump = f.read(4)
+    dump = f.read(64)
+
+    dump = f.read(1)
+    token = ord(dump[0])
+    #print "first", token
+    while token != 0:
+        
+        if token < 19:
+            #read matrix
+            #dump = f.read(64)
+            pnum()
+            
+        if token == 80:
+            #print "80"
+            dump = f.read(4)
+            dump = f.read(1)            
+            #dump = f.read(64)
+            pnum()
+            
+        if token == 19:
+            dump = f.read(4)
+            pval = struct.unpack("i", dump)
+            strleng = pval[0]
+            dump = f.read(strleng)
+            print(dump)
+            print("********************************************")
+
+
+            of.write("Object \""+str(dump)+"\" {\n")
+            of.write(" depth 0\n")
+            of.write(" folding 0\n")
+            of.write(" scale 1.000000 1.000000 1.000000\n")
+            of.write(" rotation 0.000000 0.000000 0.000000\n")
+            of.write(" translation "+xout+" "+yout+" "+zout+"\n")
+            of.write(" visible 15\n")
+            of.write(" locking 0\n")
+            of.write(" shading 1\n")
+            of.write(" facet 59.5\n")
+            of.write(" color 0.000 0.000 0.000\n")
+            of.write(" color_type 0\n")	
+            of.write(" vertex 0 {\n")
+            of.write("}\n")
+            of.write("\t face 0 {\n")
+            of.write("}\n")
+            of.write("}\n")
+
+            dump = f.read(1)
+            #dump = f.read(64)
+            
+        if token == 83:
+            dump = f.read(4)
+            pval = struct.unpack("i", dump)
+            strleng = pval[0]
+            dump = f.read(strleng)
+            print(dump)
+            print("********************************************")
+
+            #dump = f.read(64)
+            #print dump
+            of.write("Object \""+str(dump)+"\" {\n")
+            of.write(" depth 0\n")
+            of.write(" folding 0\n")
+            of.write(" scale 1.000000 1.000000 1.000000\n")
+            of.write(" rotation 0.000000 0.000000 0.000000\n")
+            of.write(" translation "+xout+" "+yout+" "+zout+"\n")
+            of.write(" visible 15\n")
+            of.write(" locking 0\n")
+            of.write(" shading 1\n")
+            of.write(" facet 59.5\n")
+            of.write(" color 0.000 0.000 0.000\n")
+            of.write(" color_type 0\n")	
+            of.write(" vertex 0 {\n")
+            of.write("}\n")
+            of.write("\t face 0 {\n")
+            of.write("}\n")
+            of.write("}\n")
+            dump = f.read(1)            
+            
+        dump = f.read(1)
+        if dump > "": token = ord(dump[0])
+        if dump == "": token = 0
+        #print "2nd",token
+
+    of.write("Eof")
+    
+   # dump = f.read(4)
+   # pval = struct.unpack("<f", dump)
+   # x = pval[0]*scale
+   # print "x pos =",("%.2f" % x)
+    
+
+
+except EOFError:
+    print("oooops")
+        
+finally:
+    f.close()
+
+of.close()    
+print("finished")
+
+

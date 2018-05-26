@@ -1,0 +1,405 @@
+﻿# This is a file I received from Blaar on Thingiverse
+# You can find his models here: https://makerware.thingiverse.com/BLaaR/about
+# I'll be using this as a blueprint for the IO of my project
+# I've converted the original tool from Python 2.x to 3.x using an online tool.
+# Below is the converted tool:
+
+
+
+
+
+# pepakura3 (.PDO) to metasequoia (.MQO) converter
+# by MrPotatoHead using python 2.6
+
+# You must specify the input file with the full directory
+# you must also specify the output directory AND filename (no extension)
+# also remember to change the scale
+
+# couldn't be bothered to invert the face orientation
+# select all and invert within metasequoia.
+
+import struct
+import zlib
+import codecs
+from array import array
+import sys
+#saveout = sys.stdout
+#outfile = open('C:/3dsmax7/pdo/output.txt', 'w')
+#sys.stdout = outfile
+
+matname = ""
+namecount=0
+h1= codecs.decode('424d','hex')
+h2=codecs.decode('000000003600000028000000','hex')
+h3=codecs.decode('010018000000000000000000120B0000120B00000000000000000000','hex')
+h4= codecs.decode('0000','hex')
+
+#******* Change the Scale here *********
+scale = 100
+#**************************************
+
+ERFname = "ncm_lgun"
+directory = "C:/temp/novacatm/"
+
+#******************************************
+
+inputname = directory+ERFname+".erf"
+f = open(inputname, "rb")
+
+UVfile = directory+"UV.tmp"
+of2 = open(UVfile, 'w+b')
+
+metafile = directory+ERFname+".mqo"
+of = open(metafile, 'w')
+
+of.write("Metasequoia Document\n")
+of.write("Format Text Ver 1.0\n")
+of.write(" \n")
+of.write("Scene {\n")
+of.write("pos -30.5374 -301.0406 878.7299\n")
+of.write("lookat 0.0000 0.0000 0.0000\n")
+of.write("head -6.8400\n")
+of.write("pich 0.1908\n")
+of.write("ortho 0\n")
+of.write("zoom2 10.0094\n")
+of.write("amb 0.490 0.490 0.490\n")
+of.write("}\n")
+
+
+#of2.write("123456")
+#of2.seek(0,0);
+#mmm = of2.read(1)
+#print mmm
+
+#just to make sure    
+#f.seek(0,0);
+
+#header -> vertices -> UV -> 
+
+# need to dump 58 read 1 byte = number of objects and repeat for number of objects
+
+
+def geterf():
+    global matname
+    global namecount
+    try:
+        start = False
+        dump = f.read(1)
+        d12 = ord(dump[0])
+        while start == False:
+            dump = f.read(1)
+            d12 = ord(dump[0])
+            if d12 == 102:
+                    dump = f.read(1)
+                    d12 = ord(dump[0])
+                    if d12 == 0:
+                        dump = f.read(1)
+                        d12 = ord(dump[0])
+                        if d12 ==0:
+                            dump = f.read(1)
+                            d12 = ord(dump[0])
+                            if d12 == 0:
+                                start = True
+
+        pos = f.tell()
+        print(pos)
+        f.seek(pos-5,0);
+        
+        dump = f.read(1)
+        numobj = ord(dump[0])
+        print("number of objects =",numobj)
+        dump = f.read(4)
+       # numobj = 1 #remove this when finished
+        for i in range(0, numobj):
+            of2.seek(0,0);
+            print("processing object",i+1)
+            name = matname+"_obj"+str(namecount+1)+"_"+str(i+1)
+            of.write("Object \""+name+"\" {\n")
+            of.write(" depth 0\n")
+            of.write(" folding 0\n")
+            of.write(" scale 1.000000 1.000000 1.000000\n")
+            of.write(" rotation 0.000000 0.000000 0.000000\n")
+            of.write(" translation 0.000000 0.000000 0.000000\n")
+            of.write(" visible 15\n")
+            of.write(" locking 0\n")
+            of.write(" shading 1\n")
+            of.write(" facet 59.5\n")
+            of.write(" color 0.000 0.000 0.000\n")
+            of.write(" color_type 0\n")	
+            of.write(" vertex "),
+
+            
+            dump = f.read(4)
+            pval = struct.unpack("i", dump)
+            numvert = pval[0]
+            print("number of vertices =",numvert)
+            of.write(str(numvert)),
+            of.write("{\n")
+            if numvert >= 500: numvert = 500
+            for i2 in range(0, numvert):
+                 dump = f.read(4)
+                 pval = struct.unpack("<f", dump)
+                 x = pval[0] *scale
+                 dump = f.read(4)
+                 pval = struct.unpack("<f", dump)
+                 y = pval[0] *scale
+                 dump = f.read(4)
+                 pval = struct.unpack("<f", dump)
+                 z = pval[0] *scale
+                 tmpstr = "\t"+("%.4f" % x)+" "+("%.4f" % y)+" "+("%.4f" % z)
+                 of.write(tmpstr+"\n")
+                 
+            #dumpnum = numvert*12         
+            #dump = f.read(dumpnum)
+            print(f.tell())
+            of.write("  }\n")
+            
+            dump = f.read(4)
+            pval = struct.unpack("i", dump)
+            numUV = pval[0]*8
+            print("number of UV=",numUV/8, numUV)
+           # if numUV >= 255: numUV = 255
+            for j in range(0, numUV):
+                c1 = f.read(1)
+                of2 .write(c1)
+                
+            of2.seek(0,0);
+            
+            #dump = f.read(40)
+            dump = f.read(25)
+            dump = f.read(1)
+            nchar = ord(dump)
+            dump = f.read(3)
+            dump = f.read(nchar)
+            dump = f.read(5)
+            
+            print(f.tell())
+            dump = f.read(4)
+            pval = struct.unpack("i", dump)
+            numtri = pval[0]
+            print("numtri =",numtri)
+            numtrib = numtri/3
+            tmpstr = "\t face"+" "+str(numtri/3)+" {\n"
+            of.write(tmpstr)
+            if numtrib >= 500: numtrib = 500
+            for i2 in range(0, numtrib):
+                tmpstr=" M(0) UV("
+                of.write("3 V("),
+                v1 = f.read(1)
+                #get UV1
+                pos = ord(v1)*8
+                of2.seek(pos,0);
+                aUV1 = of2.read(4)
+                bUV1 = struct.unpack("<f", aUV1)
+                UV1 = bUV1[0]
+                aUV2 = of2.read(4)
+                bUV2 = struct.unpack("<f", aUV2)
+                UV2 = bUV2[0]
+                tmpstr += ("%.5f" % UV1)
+                tmpstr += " "
+                tmpstr += ("%.5f" % UV2)
+                tmpstr += " "
+
+                av1 = ord(v1)
+                of.write(str(av1)+" "),
+                v2 = f.read(1)
+                #get UV2
+                pos = ord(v2)*8
+                of2.seek(pos,0);
+                aUV1 = of2.read(4)
+                bUV1 = struct.unpack("<f", aUV1)
+                UV1 = bUV1[0]
+                aUV2 = of2.read(4)
+                bUV2 = struct.unpack("<f", aUV2)
+                UV2 = bUV2[0]
+                tmpstr += ("%.5f" % UV1)
+                tmpstr += " "
+                tmpstr += ("%.5f" % UV2)
+                tmpstr += " "
+
+                av2 = ord(v2)
+                of.write(str(av2)+" "),
+                v3 = f.read(1)
+                #get UV3
+                pos = ord(v3)*8
+                of2.seek(pos,0);
+                aUV1 = of2.read(4)
+                bUV1 = struct.unpack("<f", aUV1)
+                UV1 = bUV1[0]
+                aUV2 = of2.read(4)
+                bUV2 = struct.unpack("<f", aUV2)
+                UV2 = bUV2[0]
+                tmpstr += ("%.5f" % UV1)
+                tmpstr += " "
+                tmpstr += ("%.5f" % UV2)
+                tmpstr += ")"
+
+                av3 = ord(v3)
+                of.write(str(av3)+")"),
+                tmpstr += "\n"
+                of.write(tmpstr)
+                
+            of.write("}\n")
+            of.write("}\n")
+            #now have to dump plane points and normals
+            #read(4) = number of plane points
+            anpp = f.read(4)
+            bnpp = struct.unpack("i", anpp)
+            npp = bnpp[0]
+            dumpnum = npp*16
+            #dump numplanepoints*16
+            if dumpnum != 0: dump = f.read(dumpnum)
+            #read (4) - UNKNOWN
+            dump = f.read(4)
+            #read (4) = numnormals
+            anumnorm = f.read(4)
+            bnumnorm = struct.unpack("i", anumnorm)
+            numnorm = bnumnorm[0]
+            dumpnum = numnorm*12        
+            #dump numnormals *12
+            dump = f.read(dumpnum)
+            # read (4) = 0x66   <---- this is star of mesh data marker
+            dump = f.read(4)
+            print("end of obj",i)
+
+
+
+
+
+
+    except EOFError:
+        print("oooops")
+            
+    finally:
+        print("next")
+
+
+def getmatname():
+    global matname
+    global namecount
+    try:
+        print(f.tell())
+        start = False
+        dump = f.read(1)
+        d12 = ord(dump[0])
+        while start == False:
+            dump = f.read(1)
+            d12 = ord(dump[0])
+            if d12 == 102:
+                    dump = f.read(1)
+                    d12 = ord(dump[0])
+                    if d12 == 0:
+                        dump = f.read(1)
+                        d12 = ord(dump[0])
+                        if d12 ==0:
+                            dump = f.read(1)
+                            d12 = ord(dump[0])
+                            if d12 == 0:
+                                start = True
+
+        pos = f.tell()
+        print("vertex list start = ",pos)
+        f.seek(pos-5,0);
+        
+        dump = f.read(1)
+        numobj = ord(dump[0])
+        print("number of objects =",numobj)
+        dump = f.read(4)
+       # numobj = 1 #remove this when finished
+        for i in range(0, numobj):
+            print("processing object",i+1)
+            name = ERFname+str(i+1)
+
+            dump = f.read(4)
+            pval = struct.unpack("i", dump)
+            numvert = pval[0]
+            print("number of vertices =",numvert)
+            if numvert >= 500: numvert = 500
+            for i2 in range(0, numvert):
+                 dump = f.read(4)
+                 dump = f.read(4)
+                 dump = f.read(4)
+
+
+                 
+            #dumpnum = numvert*12         
+            #dump = f.read(dumpnum)
+            print(f.tell())
+            
+            dump = f.read(4)
+            pval = struct.unpack("i", dump)
+            numUV = pval[0]*8
+            print("number of UV=",numUV/8, numUV)
+           # if numUV >= 255: numUV = 255
+            for j in range(0, numUV):
+                c1 = f.read(1)
+                
+            
+            #dump = f.read(40)
+            dump = f.read(25)
+            dump = f.read(1)
+            nchar = ord(dump)
+            dump = f.read(3)
+            dump = f.read(nchar)
+            matname = dump
+            print(matname)
+            return
+
+
+    except EOFError:
+        print("oooops")
+            
+    finally:
+        print("next")
+
+
+
+
+
+
+
+# main loop  for reading file position is here
+try:
+    eof = 0
+    while not eof: 
+        dump = f.read(1)
+        ch = ord(dump[0])
+        if ch == 35:
+            dump = f.read(1)
+            ch = ord(dump[0])
+            if ch == 70:
+                dump = f.read(1)
+                ch = ord(dump[0])
+                if ch == 82:
+                    dump = f.read(1)
+                    ch = ord(dump[0])
+                    if ch == 69:
+                        pos4=f.tell()-4
+                        print("found #FRE at ",f.tell())
+                        f.seek(pos4,0);
+                        getmatname();
+                        f.seek(pos4,0);
+                        geterf();
+                        namecount = namecount+1
+                        
+                        
+
+
+                
+        #print "# found"
+        #print f.tell()
+    
+except EOFError:
+    print("oooops")
+
+except IndexError:
+    print("that did it")
+            
+finally:
+    print("finished")
+
+of.write("Eof")
+f.close()    
+of.close()
+of2.close()
+print("finished")
