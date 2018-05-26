@@ -10,6 +10,7 @@ namespace MechConverterCS
     {
         static void Main(string[] args)
         {
+            var temp = new MechComponents(@"F:\Mercs\textures.Files\mechs\thor", @"F:\Mercs\core.Files\mechs\thor\thor.data{hierarchicalobb}");
         }
     }
 }
