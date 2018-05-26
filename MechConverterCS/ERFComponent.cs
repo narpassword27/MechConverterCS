@@ -15,12 +15,32 @@ namespace MechConverterCS
         public ERFComponent(string filepath)
         {
             FileName = new FileInfo(filepath).Name;
-            PopulateVectors(filepath);
+            PopulateVertices(filepath);
         }
 
-        private void PopulateVectors(string filepath)
+        private void PopulateVertices(string filepath)
         {
+            using (var fs = new FileStream(filepath, FileMode.Open, FileAccess.Read))
+            using (var stream = new BinaryReader(fs))
+            {
+                const int byteIndexOfPartCount = 63;
+                int ReadIndex = byteIndexOfPartCount;
 
+                byte[] fsBuffer = new byte[10];
+
+                //Need to skip the header
+                //fs.Read(fsBuffer, ReadIndex, 1);
+
+                //fs.Position = ReadIndex;
+
+                //var temp = fs.ReadByte();
+
+                //var fsRead = new StreamReader(fs);
+                //var temp = fsRead.Read();
+
+
+
+            }
         }
 
         public void Transform(Tuple<double, double, double> transformationMatrix)
