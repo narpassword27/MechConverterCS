@@ -32,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ERFViewer">
+      <HintPath>.\ERFViewer.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -44,6 +47,7 @@
   <ItemGroup>
     <Compile Include="ArmatureData.cs" />
     <Compile Include="ERFComponent.cs" />
+    <Compile Include="ERFViewHandler.cs" />
     <Compile Include="Facet.cs" />
     <Compile Include="MechComponents.cs" />
     <Compile Include="Program.cs" />

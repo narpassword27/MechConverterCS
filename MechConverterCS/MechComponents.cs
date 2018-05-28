@@ -22,15 +22,15 @@ namespace MechConverterCS
                 .ToList();
         }
 
-        public IEnumerable<Tuple<double, double, double>> OutputMesh()
-        {
-            foreach (var erf in erfs)
-            {
-                erf.Transform(armatureData.TransformationMatrices[erf.FileName]);
+        //public IEnumerable<Tuple<double, double, double>> OutputMesh()
+        //{
+        //    foreach (var erf in erfs)
+        //    {
+        //        erf.Transform(armatureData.TransformationMatrices[erf.FileName]);
 
-                foreach(var vector in erf.Vertices)
-                    yield return vector;
-            }
-        }
+        //        foreach(var vector in erf.Vertices)
+        //            yield return vector;
+        //    }
+        //}
     }
 }
