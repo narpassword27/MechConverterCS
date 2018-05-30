@@ -27,7 +27,6 @@ namespace MechConverterCS
         {
             StlFile stlFile = new StlFile();
             stlFile.SolidName = "testsolid";
-            stlFile.Triangles.Add(new StlTriangle(new StlNormal(1, 0, 0), new StlVertex(0, 0, 0), new StlVertex(1, 0, 0), new StlVertex(1, 1, 0)));
 
             foreach (var erf in erfs)
             {
